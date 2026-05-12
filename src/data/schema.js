@@ -47,3 +47,17 @@ export const orders = sqliteTable('orders', {
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 })
+
+export const sessions = sqliteTable('sessions', {
+  id: text('id').primaryKey(),
+
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  tokenHash: text('token_hash').notNull().unique(),
+
+  expiresAt: text('expires_at').notNull(),
+
+  createdAt: text('created_at').notNull(),
+})

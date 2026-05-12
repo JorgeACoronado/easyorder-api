@@ -1,6 +1,5 @@
 import { eq, and, desc } from 'drizzle-orm'
-import { db } from '../db'
-import { orders } from '../schema'
+import { orders } from './schema.js'
 
 export async function listOrdersByOwner(ownerId) {
   return db

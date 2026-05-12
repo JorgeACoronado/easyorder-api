@@ -1,6 +1,5 @@
 import { eq, and } from 'drizzle-orm'
-import { db } from '../db'
-import { menuItems } from '../schema'
+import { menuItems } from './schema.js'
 
 export async function listMenuItemsByOwner(ownerId) {
   return db.select().from(menuItems).where(eq(menuItems.ownerId, ownerId))
