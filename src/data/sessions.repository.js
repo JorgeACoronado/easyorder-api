@@ -3,9 +3,12 @@ import { nowIso } from './db.js'
 import { sessions } from './schema.js'
 
 export async function createSession(db, { userId, tokenHash, expiresAt }) {
+  const id = crypto.randomUUID()
   const [created] = await db
+
     .insert(sessions)
     .values({
+      id,
       userId,
       tokenHash,
       expiresAt,
