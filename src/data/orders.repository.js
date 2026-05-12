@@ -1,7 +1,7 @@
 import { eq, and, desc } from 'drizzle-orm'
 import { orders } from './schema.js'
 
-export async function listOrdersByOwner(ownerId) {
+export async function listOrdersByOwner(db, ownerId) {
   return db
     .select()
     .from(orders)
@@ -9,7 +9,7 @@ export async function listOrdersByOwner(ownerId) {
     .orderBy(desc(orders.createdAt))
 }
 
-export async function getOrderById(id, ownerId) {
+export async function getOrderById(db, id, ownerId) {
   const result = await db
     .select()
     .from(orders)
@@ -18,7 +18,7 @@ export async function getOrderById(id, ownerId) {
   return result[0] || null
 }
 
-export async function createOrder(data) {
+export async function createOrder(db, data) {
   const now = new Date().toISOString()
 
   const order = {
@@ -39,7 +39,7 @@ export async function createOrder(data) {
   return order
 }
 
-export async function updateOrderStatus(id, ownerId, status) {
+export async function updateOrderStatus(db, id, ownerId, status) {
   const now = new Date().toISOString()
 
   await db
@@ -51,7 +51,7 @@ export async function updateOrderStatus(id, ownerId, status) {
     .where(and(eq(orders.id, id), eq(orders.ownerId, ownerId)))
 }
 
-export async function deleteOrder(id, ownerId) {
+export async function deleteOrder(db, id, ownerId) {
   await db
     .delete(orders)
     .where(and(eq(orders.id, id), eq(orders.ownerId, ownerId)))
