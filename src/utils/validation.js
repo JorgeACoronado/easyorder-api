@@ -1,8 +1,14 @@
 import { z } from 'zod'
 import { ApiError } from './errors.js'
-import { TASK_STATUSES } from './constants.js'
 
-const statusMessage = `Status must be one of: ${TASK_STATUSES.join(', ')}.`
+const ORDER_TYPES = ['pickup', 'delivery', 'curbside']
+const ORDER_STATUSES = [
+  'pending',
+  'preparing',
+  'ready',
+  'completed',
+  'cancelled',
+]
 
 const idParamSchema = z
   .string()
@@ -12,26 +18,48 @@ const idParamSchema = z
     error: 'ID must be a positive integer.',
   })
 
-const projectCreateSchema = z.strictObject({
+const menuItemCreateSchema = z.strictObject({
   name: z
-    .string({ error: 'Project name is required.' })
+    .string({ error: 'Menu item name is required.' })
     .trim()
-    .min(1, { error: 'Project name is required.' }),
+    .min(1, { error: 'Menu item name is required.' }),
 
-  description: z.string({ error: 'Description must be a string.' }).optional(),
+  category: z
+    .string({ error: 'Category is required.' })
+    .trim()
+    .min(1, { error: 'Category is required.' }),
+
+  price: z
+    .number({ error: 'Price must be a number.' })
+    .positive({ error: 'Price must be greater than 0.' }),
+
+  available: z
+    .boolean({ error: 'Available must be true or false.' })
+    .optional(),
+
+  image_url: z.string({ error: 'Image URL must be a string.' }).optional(),
 })
 
-const projectPatchSchema = z
+const menuItemPatchSchema = z
   .strictObject({
     name: z
-      .string({ error: 'Project name must be a non-empty string.' })
+      .string({ error: 'Menu item name is required.' })
       .trim()
-      .min(1, { error: 'Project name must be a non-empty string.' })
+      .min(1, { error: 'Menu item name is required.' })
       .optional(),
-
-    description: z
-      .string({ error: 'Description must be a string.' })
+    category: z
+      .string({ error: 'Category is required.' })
+      .trim()
+      .min(1, { error: 'Category is required.' })
       .optional(),
+    price: z
+      .number({ error: 'Price must be a number.' })
+      .positive({ error: 'Price must be greater than 0.' })
+      .optional(),
+    available: z
+      .boolean({ error: 'Available must be true or false.' })
+      .optional(),
+    image_url: z.string({ error: 'Image URL must be a string.' }).optional(),
   })
   .superRefine((value, ctx) => {
     if (Object.keys(value).length === 0) {
@@ -43,44 +71,41 @@ const projectPatchSchema = z
     }
   })
 
-const taskCreateSchema = z.strictObject({
-  title: z
-    .string({ error: 'Task name is required.' })
+const orderCreateSchema = z.strictObject({
+  customerName: z
+    .string({ error: 'Customer name is required.' })
     .trim()
-    .min(1, { error: 'Task name is required.' }),
-  description: z.string({ error: 'Description must be a string.' }).optional(),
-  status: z
-    .string({ error: statusMessage })
-    .refine((value) => TASK_STATUSES.includes(value), { error: statusMessage })
+    .min(1, { error: 'Customer name is required.' }),
+
+  customerPhone: z
+    .string({ error: 'Customer phone must be a string.' })
     .optional(),
+
+  orderType: z
+    .string({ error: 'Order type is required.' })
+    .refine((value) => ORDER_TYPES.includes(value), {
+      error: 'Order type must be pickup, delivery, or curbside.',
+    })
+    .optional(),
+
+  itemsJson: z
+    .string({ error: 'Items JSON is required.' })
+    .trim()
+    .min(1, { error: 'Items JSON is required.' }),
+
+  total: z
+    .number({ error: 'Total must be a number.' })
+    .positive({ error: 'Total must be greater than 0.' }),
 })
 
-const taskPatchSchema = z
-  .strictObject({
-    title: z
-      .string({ error: 'Task title must be a non-empty string.' })
-      .trim()
-      .min(1, { error: 'Task title must be a non-empty string.' })
-      .optional(),
-    description: z
-      .string({ error: 'Description must be a string.' })
-      .optional(),
-    status: z
-      .string({ error: statusMessage })
-      .refine((value) => TASK_STATUSES.includes(value), {
-        error: statusMessage,
-      })
-      .optional(),
-  })
-  .superRefine((value, ctx) => {
-    if (Object.keys(value).length === 0) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['body'],
-        message: 'Provide at least one field to update.',
-      })
-    }
-  })
+const orderStatusPatchSchema = z.strictObject({
+  status: z
+    .string({ error: 'Status is required.' })
+    .refine((value) => ORDER_STATUSES.includes(value), {
+      error:
+        'Status must be pending, preparing, ready, completed, or cancelled.',
+    }),
+})
 
 export function parseIdParam(rawValue, fieldName = 'id') {
   const result = idParamSchema.safeParse(rawValue)
@@ -160,20 +185,20 @@ function validateWithSchema(payload, schema) {
   return mapZodIssuesToDetails(result.error.issues)
 }
 
-export function validateProjectCreate(payload) {
-  return validateWithSchema(payload, projectCreateSchema)
+export function validateMenuItemCreate(payload) {
+  return validateWithSchema(payload, menuItemCreateSchema)
 }
 
-export function validateProjectPatch(payload) {
-  return validateWithSchema(payload, projectPatchSchema)
+export function validateMenuItemPatch(payload) {
+  return validateWithSchema(payload, menuItemPatchSchema)
 }
 
-export function validateTaskCreate(payload) {
-  return validateWithSchema(payload, taskCreateSchema)
+export function validateOrderCreate(payload) {
+  return validateWithSchema(payload, orderCreateSchema)
 }
 
-export function validateTaskPatch(payload) {
-  return validateWithSchema(payload, taskPatchSchema)
+export function validateOrderStatusPatch(payload) {
+  return validateWithSchema(payload, orderStatusPatchSchema)
 }
 
 export function validateRegister(payload) {

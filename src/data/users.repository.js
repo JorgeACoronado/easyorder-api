@@ -11,13 +11,17 @@ export async function findUserByEmail(db, email) {
   return user || null
 }
 
-export async function createUser(db, { email, passwordHash }) {
+export async function createUser(db, { name, email, passwordHash }) {
   const timestamp = nowIso()
+
   const [created] = await db
     .insert(users)
     .values({
+      id: crypto.randomUUID(),
+      name,
       email: email.toLowerCase(),
       passwordHash,
+      role: 'owner',
       createdAt: timestamp,
       updatedAt: timestamp,
     })
