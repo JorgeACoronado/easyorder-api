@@ -1,75 +1,49 @@
-import { sql } from 'drizzle-orm'
-import {
-  check,
-  index,
-  integer,
-  sqliteTable,
-  text,
-  uniqueIndex,
-} from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
 
-export const projects = sqliteTable(
-  'projects',
-  {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    userId: integer('user_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    name: text('name').notNull(),
-    description: text('description').notNull().default(''),
-    createdAt: text('created_at').notNull(),
-    updatedAt: text('updated_at').notNull(),
-  },
-  (table) => [index('idx_projects_user_id').on(table.userId)],
-)
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  role: text('role').notNull().default('owner'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
 
-export const tasks = sqliteTable(
-  'tasks',
-  {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    projectId: integer('project_id')
-      .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
-    title: text('title').notNull(),
-    description: text('description').notNull().default(''),
-    status: text('status').notNull().default('todo'),
-    createdAt: text('created_at').notNull(),
-    updatedAt: text('updated_at').notNull(),
-  },
-  (table) => [
-    check(
-      'tasks_status_check',
-      sql`${table.status} IN ('todo', 'in_progress', 'done')`,
-    ),
-    index('idx_tasks_project_id').on(table.projectId),
-  ],
-)
+export const menuItems = sqliteTable('menu_items', {
+  id: text('id').primaryKey(),
 
-export const users = sqliteTable(
-  'users',
-  {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    email: text('email').notNull().unique(),
-    passwordHash: text('password_hash').notNull(),
-    createdAt: text('created_at').notNull(),
-    updatedAt: text('updated_at').notNull(),
-  },
-  (table) => [uniqueIndex('idx_users_email').on(table.email)],
-)
+  ownerId: text('owner_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
 
-export const sessions = sqliteTable(
-  'sessions',
-  {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    userId: integer('user_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    tokenHash: text('token_hash').notNull().unique(),
-    expiresAt: text('expires_at').notNull(),
-    createdAt: text('created_at').notNull(),
-  },
-  (table) => [
-    uniqueIndex('idx_sessions_token_hash').on(table.tokenHash),
-    index('idx_sessions_user_id').on(table.userId),
-  ],
-)
+  name: text('name').notNull(),
+  category: text('category').notNull(),
+  price: real('price').notNull(),
+  available: integer('available', { mode: 'boolean' }).notNull().default(true),
+  imageUrl: text('image_url'),
+
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
+
+export const orders = sqliteTable('orders', {
+  id: text('id').primaryKey(),
+
+  ownerId: text('owner_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  customerName: text('customer_name').notNull(),
+  customerPhone: text('customer_phone'),
+  orderType: text('order_type').notNull().default('pickup'),
+  status: text('status').notNull().default('pending'),
+
+  //storing cart/order items as JSON text
+  itemsJson: text('items_json').notNull(),
+
+  total: real('total').notNull(),
+
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
