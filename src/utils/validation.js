@@ -150,6 +150,10 @@ function mapZodIssuesToDetails(issues) {
 }
 
 const registerSchema = z.strictObject({
+  name: z
+    .string({ error: 'Name is required.' })
+    .trim()
+    .min(1, { error: 'Name is required.' }),
   email: z.email({ error: 'Email must be a valid email address.' }),
   password: z
     .string({ error: 'Password is required.' })

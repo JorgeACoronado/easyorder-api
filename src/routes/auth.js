@@ -49,7 +49,11 @@ auth.post('/register', async (c) => {
     )
   }
   const passwordHash = await hashPassword(payload.password)
-  const user = await createUser(db, { email: payload.email, passwordHash })
+  const user = await createUser(db, {
+    name: payload.name,
+    email: payload.email,
+    passwordHash,
+  })
 
   c.header('Location', `/api/auth/users/${user.id}`)
   return sendResource(
