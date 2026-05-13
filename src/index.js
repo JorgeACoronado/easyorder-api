@@ -2,8 +2,10 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { rateLimiter } from 'hono-rate-limiter'
 import auth from './routes/auth.js'
-import menuItems from './routes/menuItems.js'
-import orders from './routes/orders.js'
+import publicMenuItems from './routes/publicMenuItems.js'
+import adminMenuItems from './routes/adminMenuItems.js'
+import publicOrders from './routes/publicOrders.js'
+import adminOrders from './routes/adminOrders.js'
 import { authenticate } from './middleware/authenticate.js'
 import { isApiError } from './utils/errors.js'
 import { sendError } from './utils/response.js'
@@ -49,9 +51,15 @@ app.use(
 
 api.route('/auth', auth)
 
-api.use('*', authenticate)
-api.route('/menu-items', menuItems)
-api.route('/orders', orders)
+//public routes
+api.route('/menu-items', publicMenuItems)
+api.route('/orders', publicOrders)
+
+//protected routes
+api.use('/admin/*', authenticate)
+
+api.route('/admin/menu-items', adminMenuItems)
+api.route('/admin/orders', adminOrders)
 
 app.route('/api', api)
 

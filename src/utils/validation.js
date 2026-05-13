@@ -10,13 +10,7 @@ const ORDER_STATUSES = [
   'cancelled',
 ]
 
-const idParamSchema = z
-  .string()
-  .regex(/^\d+$/, { error: 'ID must be a positive integer.' })
-  .transform((value) => Number(value))
-  .refine((value) => Number.isSafeInteger(value) && value > 0, {
-    error: 'ID must be a positive integer.',
-  })
+const idParamSchema = z.string().uuid('ID must be a valid UUID.')
 
 const menuItemCreateSchema = z.strictObject({
   name: z
@@ -96,6 +90,10 @@ const orderCreateSchema = z.strictObject({
   total: z
     .number({ error: 'Total must be a number.' })
     .positive({ error: 'Total must be greater than 0.' }),
+
+  businessEmail: z
+    .string()
+    .email({ message: 'Business email must be a valid email address.' }),
 })
 
 const orderStatusPatchSchema = z.strictObject({
