@@ -2,6 +2,12 @@ import { eq, and } from 'drizzle-orm'
 import { menuItems } from './schema.js'
 import { nowIso } from './db.js'
 
+//Public
+export async function listAvailableMenuItems(db) {
+  return db.select().from(menuItems).where(eq(menuItems.available, true))
+}
+
+//Business Owner
 export async function listMenuItemsByOwner(db, ownerId) {
   return db.select().from(menuItems).where(eq(menuItems.ownerId, ownerId))
 }
@@ -43,7 +49,7 @@ export async function updateMenuItem(db, id, ownerId, patch) {
     .update(menuItems)
     .set({
       ...patch,
-      imageUrl: patch.image_url,
+      ...(patch.image_url !== undefined ? { imageUrl: patch.image_url } : {}),
       updatedAt: now,
     })
     .where(and(eq(menuItems.id, id), eq(menuItems.ownerId, ownerId)))
