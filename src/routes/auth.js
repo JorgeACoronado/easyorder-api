@@ -97,7 +97,7 @@ auth.post('/login', async (c) => {
   }
 
   const accessToken = await signAccessToken(
-    { sub: user.id, email: user.email },
+    { sub: user.id, email: user.email, role: user.role },
     c.env.JWT_SECRET,
   )
 

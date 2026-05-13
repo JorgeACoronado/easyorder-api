@@ -59,13 +59,16 @@ export async function getOrderById(db, id, ownerId) {
 export async function updateOrderStatus(db, id, ownerId, status) {
   const now = new Date().toISOString()
 
-  await db
+  const [order] = await db
     .update(orders)
     .set({
       status,
       updatedAt: now,
     })
     .where(and(eq(orders.id, id), eq(orders.ownerId, ownerId)))
+    .returning()
+
+  return order || null
 }
 
 export async function deleteOrder(db, id, ownerId) {

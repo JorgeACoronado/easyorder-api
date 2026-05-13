@@ -9,6 +9,7 @@ import adminOrders from './routes/adminOrders.js'
 import { authenticate } from './middleware/authenticate.js'
 import { isApiError } from './utils/errors.js'
 import { sendError } from './utils/response.js'
+import admin from './routes/admin.js'
 
 const app = new Hono()
 const api = new Hono()
@@ -60,6 +61,7 @@ api.use('/admin/*', authenticate)
 
 api.route('/admin/menu-items', adminMenuItems)
 api.route('/admin/orders', adminOrders)
+api.route('/admin', admin)
 
 app.route('/api', api)
 
