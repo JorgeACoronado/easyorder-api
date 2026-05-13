@@ -49,9 +49,12 @@ app.use(
 
 api.route('/auth', auth)
 
-api.use('*', authenticate)
-api.route('/menu-items', menuItems)
+// Public customer routes
 api.route('/orders', orders)
+
+// Protected business/admin routes
+api.use('/menu-items/*', authenticate)
+api.route('/menu-items', menuItems)
 
 app.route('/api', api)
 
